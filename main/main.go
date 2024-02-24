@@ -47,6 +47,8 @@ func baseHandler(writer http.ResponseWriter, request *http.Request) {
 	switch command {
 	case "SHOW_CHAT_PAGE":
 		ShowChatPage(writer, request, session)
+	case "SEND_MESSAGE":
+		SendMessage(writer, request, session)
 	case "LOGOUT":
 		Logout(writer, request, session)
 	default:

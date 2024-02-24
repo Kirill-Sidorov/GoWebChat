@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	"webchat/messages"
 )
 
@@ -69,6 +70,16 @@ func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *se
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func SendMessage(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
+	user := session.Values["user"].(User)
+	message := request.FormValue("message")
+	message = strings.TrimSpace(message)
+	if len(message) > 0 {
+		messages.AddMessage(user.Name, message)
+	}
+	http.Redirect(writer, request, "/chat?command=show_chat_page", http.StatusFound)
 }
 
 func Login(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
