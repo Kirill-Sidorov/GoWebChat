@@ -1,50 +1,49 @@
 <!DOCTYPE html>
 <html>
-<link rel="icon" href="data:,">
-<head>
-    <title>Чат</title>
-</head>
-<body>
-<div align="center">
-    <table>
-        <tr>
-            <td><h3>Чат, Пользователь - <c:out value="${user.name}"/></h3></td>
-            <td><a href="chat?command=logout">Выход</a></td>
-        </tr>
-        <tr>
-            <td>
-                <textarea rows="10" cols="45" readonly="true">${messages}</textarea>
-            </td>
-        </tr>
-        <c:if test="${user.block == false}">
-            <form method="POST" id="messageSendForm" action="chat?command=send_message"></form>
-            <tr>
-                <td>
-                    <textarea form="messageSendForm" rows="2" cols="45" name="message" placeholder="Поле ввода сообщения" autofocus="true"></textarea>
-                </td>
-            </tr>
-        </c:if>
-        <tr>
-            <td>
-                <c:if test="${user.block == false}">
-                    <button form="messageSendForm" type="submit">Отправить</button>
-                </c:if>
-            </td>
-            <td>
-                <a href="chat?command=show_chat_page">
-                    <button>Обновить</button>
-                </a>
-            </td>
-        </tr>
-        <c:if test="${user.userType == 'ADMIN'}">
-            <tr>
-                <td></td>
-                <td>
-                    <a href="chat?command=show_users_page">Пользователи</a>
-                </td>
-            </tr>
-        </c:if>
-    </table>
-</div>
-</body>
+    <head>
+        <title>Чат</title>
+    </head>
+    <body bgcolor="#c0c0c0">
+        <div align="center">
+            <table>
+                <tr>
+                    <td><h3>Чат, Пользователь - {{.UserName}}</h3></td>
+                    <td><a href="chat?command=logout">Выход</a></td>
+                </tr>
+                <tr>
+                    <td>
+                        <textarea rows="10" cols="45" readonly="true">{{.Messages}}</textarea>
+                    </td>
+                </tr>
+                {{if not .IsBlock}}
+                    <form method="POST" id="messageSendForm" action="chat?command=send_message"></form>
+                    <tr>
+                        <td>
+                            <textarea form="messageSendForm" rows="2" cols="45" name="message" placeholder="Поле ввода сообщения" autofocus="true"></textarea>
+                        </td>
+                    </tr>
+                {{end}}
+                <tr>
+                    <td>
+                        {{if not .IsBlock}}
+                            <button form="messageSendForm" type="submit">Отправить</button>
+                        {{end}}
+                    </td>
+                    <td>
+                        <a href="chat?command=show_chat_page">
+                            <button>Обновить</button>
+                        </a>
+                    </td>
+                </tr>
+                {{if not .IsAdmin}}
+                    <tr>
+                        <td></td>
+                        <td>
+                            <a href="chat?command=show_users_page">Пользователи</a>
+                        </td>
+                    </tr>
+                {{end}}
+            </table>
+        </div>
+    </body>
 </html>

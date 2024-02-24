@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"github.com/gorilla/sessions"
 	"log"
 	"net/http"
@@ -11,6 +12,9 @@ var store *sessions.CookieStore
 
 func main() {
 	store = sessions.NewCookieStore([]byte("key-secret"))
+	store.MaxAge(86400)
+
+	gob.Register(User{})
 
 	server := http.NewServeMux()
 	server.HandleFunc("/", baseHandler)
@@ -42,9 +46,11 @@ func baseHandler(writer http.ResponseWriter, request *http.Request) {
 
 	switch command {
 	case "SHOW_CHAT_PAGE":
-		ShowChatPage(writer, request)
+		ShowChatPage(writer, request, session)
+	case "LOGOUT":
+		Logout(writer, request, session)
 	default:
-		ShowChatPage(writer, request)
+		ShowChatPage(writer, request, session)
 	}
 }
 
