@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"github.com/gorilla/sessions"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"webchat/messages"
+	"webchat/users"
 )
 
 type ShowLoginPageData struct {
@@ -58,13 +59,13 @@ func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *se
 		log.Println(err)
 	}
 
-	user := session.Values["user"].(User)
+	user := session.Values["user"].(users.User)
 
 	err = chatPage.Execute(writer, ShowChatPageData{
 		UserName: user.Name,
 		Messages: messages.GetMessages(),
 		IsBlock:  false,
-		IsAdmin:  user.Type == ADMIN,
+		IsAdmin:  user.Type == users.ADMIN,
 	})
 
 	if err != nil {
@@ -73,7 +74,7 @@ func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *se
 }
 
 func SendMessage(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
-	user := session.Values["user"].(User)
+	user := session.Values["user"].(users.User)
 	message := request.FormValue("message")
 	message = strings.TrimSpace(message)
 	if len(message) > 0 {
@@ -87,7 +88,7 @@ func Login(writer http.ResponseWriter, request *http.Request, session *sessions.
 	password := request.FormValue("passwordInput")
 	login := request.FormValue("loginInput")
 
-	user, find := users[login]
+	user, find := users.ChatUsersMap[login]
 
 	if find && user.Password == password {
 

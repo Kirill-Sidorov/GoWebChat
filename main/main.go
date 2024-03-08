@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"webchat/handler"
+	"webchat/users"
 )
 
 var store *sessions.CookieStore
@@ -14,7 +16,7 @@ func main() {
 	store = sessions.NewCookieStore([]byte("key-secret"))
 	store.MaxAge(86400)
 
-	gob.Register(User{})
+	gob.Register(users.User{})
 
 	server := http.NewServeMux()
 	server.HandleFunc("/", baseHandler)
@@ -37,22 +39,22 @@ func baseHandler(writer http.ResponseWriter, request *http.Request) {
 	if !ok || !auth {
 
 		if command == "LOGIN" {
-			Login(writer, request, session)
+			handler.Login(writer, request, session)
 			return
 		}
-		ShowLoginPage(writer, request, session)
+		handler.ShowLoginPage(writer, request, session)
 		return
 	}
 
 	switch command {
 	case "SHOW_CHAT_PAGE":
-		ShowChatPage(writer, request, session)
+		handler.ShowChatPage(writer, request, session)
 	case "SEND_MESSAGE":
-		SendMessage(writer, request, session)
+		handler.SendMessage(writer, request, session)
 	case "LOGOUT":
-		Logout(writer, request, session)
+		handler.Logout(writer, request, session)
 	default:
-		ShowChatPage(writer, request, session)
+		handler.ShowChatPage(writer, request, session)
 	}
 }
 
