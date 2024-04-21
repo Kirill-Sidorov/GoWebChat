@@ -1,5 +1,50 @@
 <!DOCTYPE html>
 <html>
+    <script type="text/javascript">
+        window.onload = function () {
+            var connection;
+            var messageInput = document.getElementById("messageInput");
+            var chat = document.getElementById("chat");
+        
+            function appendMessage(item) {
+                chat.value += item
+            }
+        
+            document.getElementById("messageSendForm").onsubmit = function () {
+                if (!connection) {
+                    return false;
+                }
+                if (!messageInput.value) {
+                    return false;
+                }
+                connection.send(messageInput.value);
+                messageInput.value = "";
+                return false;
+            };
+        
+            if (window["WebSocket"]) {
+                connection = new WebSocket("ws://" + document.location.host + "/chat?command=create_web_socket_connection");
+                connection.onclose = function (evt) {
+                    appendMessage("Connection closed");
+                };
+                connection.onmessage = function (evt) {
+                    var messages = evt.data.split('\n');
+                    for (var i = 0; i < messages.length; i++) {
+                        appendMessage(messages[i]);
+                    }
+                };
+            } else {
+                appendMessage("Your browser does not support WebSockets.");
+            }
+        };
+    </script>
+    <style>
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+        }
+    </style>
     <head>
         <title>Чат</title>
     </head>
@@ -12,27 +57,24 @@
                 </tr>
                 <tr>
                     <td>
-                        <textarea rows="10" cols="45" readonly="true">{{.Messages}}</textarea>
+                        <textarea id="chat" rows="10" cols="45" readonly="true"></textarea>
                     </td>
                 </tr>
                 {{if not .IsBlock}}
-                    <form method="POST" id="messageSendForm" action="chat?command=send_message"></form>
+                    <form id="messageSendForm" action="chat?command=send_message"></form>
                     <tr>
                         <td>
-                            <textarea form="messageSendForm" rows="1" cols="45" name="message" placeholder="Поле ввода сообщения" autofocus="true"></textarea>
+                            <input id="messageInput" form="messageSendForm" placeholder="Поле ввода сообщения" autofocus="true"/>
                         </td>
                     </tr>
                 {{end}}
                 <tr>
                     <td>
                         {{if not .IsBlock}}
-                            <button form="messageSendForm" type="submit">Отправить</button>
+                            <button id="messageSendButton" form="messageSendForm" type="submit">
+                                Отправить
+                            </button>
                         {{end}}
-                    </td>
-                    <td>
-                        <a href="chat?command=show_chat_page">
-                            <button>Обновить</button>
-                        </a>
                     </td>
                 </tr>
                 {{if not .IsAdmin}}

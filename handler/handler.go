@@ -1,16 +1,22 @@
 package handler
 
 import (
-	"github.com/gorilla/sessions"
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
-	"webchat/messages"
+	"webchat/chat"
 	"webchat/users"
+
+	"github.com/gorilla/sessions"
+	"github.com/gorilla/websocket"
 )
 
-type ShowLoginPageData struct {
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+type showLoginPageData struct {
 	LoginInput        string
 	ErrorLoginMessage string
 }
@@ -40,15 +46,14 @@ func ShowLoginPage(writer http.ResponseWriter, request *http.Request, session *s
 		log.Println(err)
 	}
 
-	err = loginPage.Execute(writer, ShowLoginPageData{LoginInput: loginInput, ErrorLoginMessage: errorLoginMessage})
+	err = loginPage.Execute(writer, showLoginPageData{LoginInput: loginInput, ErrorLoginMessage: errorLoginMessage})
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-type ShowChatPageData struct {
+type showChatPageData struct {
 	UserName string
-	Messages string
 	IsBlock  bool
 	IsAdmin  bool
 }
@@ -61,9 +66,8 @@ func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *se
 
 	user := session.Values["user"].(users.User)
 
-	err = chatPage.Execute(writer, ShowChatPageData{
+	err = chatPage.Execute(writer, showChatPageData{
 		UserName: user.Name,
-		Messages: messages.GetMessages(),
 		IsBlock:  false,
 		IsAdmin:  user.Type == users.ADMIN,
 	})
@@ -73,6 +77,7 @@ func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *se
 	}
 }
 
+/*
 func SendMessage(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
 	user := session.Values["user"].(users.User)
 	message := request.FormValue("message")
@@ -81,6 +86,27 @@ func SendMessage(writer http.ResponseWriter, request *http.Request, session *ses
 		messages.AddMessage(user.Name, message)
 	}
 	http.Redirect(writer, request, "/chat?command=show_chat_page", http.StatusFound)
+}
+*/
+
+func CreateWebSocketConnection(writer http.ResponseWriter, 
+							   request *http.Request, 
+							   session *sessions.Session,
+							   hub *chat.Hub) {
+
+								
+	connection, err := upgrader.Upgrade(writer, request, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	user := session.Values["user"].(users.User)
+	client := chat.NewClient(hub, connection, user.Name)
+	
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go client.WritePump()
+	go client.ReadPump(hub)						
 }
 
 func Login(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
