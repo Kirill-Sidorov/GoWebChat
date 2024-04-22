@@ -7,7 +7,8 @@
             var chat = document.getElementById("chat");
         
             function appendMessage(item) {
-                chat.value += item
+                chat.value += item + '\n'
+                chat.scrollTop = chat.scrollHeight
             }
         
             document.getElementById("messageSendForm").onsubmit = function () {
@@ -57,7 +58,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <textarea id="chat" rows="10" cols="45" readonly="true"></textarea>
+                        <textarea id="chat" rows="30" cols="45" readonly="true"></textarea>
                     </td>
                 </tr>
                 {{if not .IsBlock}}

@@ -9,13 +9,9 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
-	// Time allowed to read the next pong message from the peer.
 	pongWait = 60 * time.Second
-	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
-	// Maximum message size allowed from peer.
 	maxMessageSize = 512
 )
 
@@ -24,11 +20,8 @@ var (
 	space   = []byte{' '}
 )
 
-// Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	// The websocket connection.
 	conn *websocket.Conn
-	// Buffered channel of outbound messages.
 	send chan []byte
 	name string
 }
@@ -43,11 +36,6 @@ func NewClient(hub *Hub, conn *websocket.Conn, name string) *Client {
 	return client
 }
 
-// readPump pumps messages from the websocket connection to the hub.
-//
-// The application runs readPump in a per-connection goroutine. The application
-// ensures that there is at most one reader on a connection by executing all
-// reads from this goroutine.
 func (c *Client) ReadPump(hub *Hub) {
 	defer func() {
 		hub.unregister <- c
@@ -66,15 +54,11 @@ func (c *Client) ReadPump(hub *Hub) {
 		}
 		message = bytes.Replace(message, newline, space, -1)
 		message = bytes.TrimSpace(message)
+		message = append([]byte(c.name + ": "), message...)
 		hub.broadcast <- message
 	}
 }
 
-// writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
 func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {

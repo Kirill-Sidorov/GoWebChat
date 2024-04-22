@@ -95,16 +95,14 @@ func CreateWebSocketConnection(writer http.ResponseWriter,
 							   hub *chat.Hub) {
 
 								
-	connection, err := upgrader.Upgrade(writer, request, nil)
+	conn, err := upgrader.Upgrade(writer, request, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	user := session.Values["user"].(users.User)
-	client := chat.NewClient(hub, connection, user.Name)
+	client := chat.NewClient(hub, conn, user.Name)
 	
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
 	go client.WritePump()
 	go client.ReadPump(hub)						
 }
