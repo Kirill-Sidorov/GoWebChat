@@ -21,7 +21,7 @@ type showLoginPageData struct {
 	ErrorLoginMessage string
 }
 
-func ShowLoginPage(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
+func ShowLoginPage(response http.ResponseWriter, request *http.Request, session *sessions.Session) {
 
 	loginPage, err := template.ParseFiles("resources/login.html")
 	if err != nil {
@@ -41,12 +41,12 @@ func ShowLoginPage(writer http.ResponseWriter, request *http.Request, session *s
 	delete(session.Values, "LoginInput")
 	delete(session.Values, "ErrorLoginMessage")
 
-	err = session.Save(request, writer)
+	err = session.Save(request, response)
 	if err != nil {
 		log.Println(err)
 	}
 
-	err = loginPage.Execute(writer, showLoginPageData{LoginInput: loginInput, ErrorLoginMessage: errorLoginMessage})
+	err = loginPage.Execute(response, &showLoginPageData{LoginInput: loginInput, ErrorLoginMessage: errorLoginMessage})
 	if err != nil {
 		log.Println(err)
 	}
@@ -58,7 +58,7 @@ type showChatPageData struct {
 	IsAdmin  bool
 }
 
-func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
+func ShowChatPage(response http.ResponseWriter, request *http.Request, session *sessions.Session) {
 	chatPage, err := template.ParseFiles("resources/chat.html")
 	if err != nil {
 		log.Println(err)
@@ -66,7 +66,7 @@ func ShowChatPage(writer http.ResponseWriter, request *http.Request, session *se
 
 	user := session.Values["user"].(users.User)
 
-	err = chatPage.Execute(writer, showChatPageData{
+	err = chatPage.Execute(response, showChatPageData{
 		UserName: user.Name,
 		IsBlock:  false,
 		IsAdmin:  user.Type == users.ADMIN,
@@ -89,13 +89,13 @@ func SendMessage(writer http.ResponseWriter, request *http.Request, session *ses
 }
 */
 
-func CreateWebSocketConnection(writer http.ResponseWriter, 
+func CreateWebSocketConnection(response http.ResponseWriter, 
 							   request *http.Request, 
 							   session *sessions.Session,
 							   hub *chat.Hub) {
 
 								
-	conn, err := upgrader.Upgrade(writer, request, nil)
+	conn, err := upgrader.Upgrade(response, request, nil)
 	if err != nil {
 		log.Println(err)
 		return
@@ -107,7 +107,7 @@ func CreateWebSocketConnection(writer http.ResponseWriter,
 	go client.ReadPump(hub)						
 }
 
-func Login(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
+func Login(response http.ResponseWriter, request *http.Request, session *sessions.Session) {
 
 	password := request.FormValue("passwordInput")
 	login := request.FormValue("loginInput")
@@ -118,27 +118,27 @@ func Login(writer http.ResponseWriter, request *http.Request, session *sessions.
 
 		session.Values["authenticated"] = true
 		session.Values["user"] = user
-		err := session.Save(request, writer)
+		err := session.Save(request, response)
 		if err != nil {
 			log.Println(err)
 		}
-		http.Redirect(writer, request, "/chat?command=show_chat_page", http.StatusFound)
+		http.Redirect(response, request, "/chat?command=show_chat_page", http.StatusFound)
 		return
 	}
 
 	session.Values["LoginInput"] = login
 	session.Values["ErrorLoginMessage"] = "Неправильный логин или пароль"
 
-	err := session.Save(request, writer)
+	err := session.Save(request, response)
 	if err != nil {
 		log.Println(err)
 	}
-	http.Redirect(writer, request, "/chat?command=show_login_page", http.StatusFound)
+	http.Redirect(response, request, "/chat?command=show_login_page", http.StatusFound)
 }
 
-func Logout(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
+func Logout(response http.ResponseWriter, request *http.Request, session *sessions.Session) {
 
 	session.Values["authenticated"] = false
 
-	ShowLoginPage(writer, request, session)
+	ShowLoginPage(response, request, session)
 }
