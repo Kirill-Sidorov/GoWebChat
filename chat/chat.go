@@ -26,19 +26,19 @@ type Client struct {
 	name string
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn, name string) *Client {
+func NewClient(conn *websocket.Conn, name string) *Client {
 	client := &Client{
 		conn: conn,
 		send: make(chan []byte, 256),
 		name: name,
 	}
-	hub.register <- client
+	register <- client
 	return client
 }
 
-func (c *Client) ReadPump(hub *Hub) {
+func (c *Client) ReadPump() {
 	defer func() {
-		hub.unregister <- c
+		unregister <- c
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -55,7 +55,7 @@ func (c *Client) ReadPump(hub *Hub) {
 		message = bytes.Replace(message, newline, space, -1)
 		message = bytes.TrimSpace(message)
 		message = append([]byte(c.name + ": "), message...)
-		hub.broadcast <- message
+		broadcast <- message
 	}
 }
 

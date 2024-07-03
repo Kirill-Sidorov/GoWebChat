@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 	"webchat/chat"
-	"webchat/users"
+	"webchat/db"
 
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var upgrader = websocket.Upgrader{
@@ -64,12 +65,12 @@ func ShowChatPage(response http.ResponseWriter, request *http.Request, session *
 		log.Println(err)
 	}
 
-	user := session.Values["user"].(users.User)
+	user := session.Values["user"].(db.User)
 
 	err = chatPage.Execute(response, showChatPageData{
 		UserName: user.Name,
 		IsBlock:  false,
-		IsAdmin:  user.Type == users.ADMIN,
+		IsAdmin:  user.Type == db.ADMIN,
 	})
 
 	if err != nil {
@@ -91,8 +92,7 @@ func SendMessage(writer http.ResponseWriter, request *http.Request, session *ses
 
 func CreateWebSocketConnection(response http.ResponseWriter, 
 							   request *http.Request, 
-							   session *sessions.Session,
-							   hub *chat.Hub) {
+							   session *sessions.Session) {
 
 								
 	conn, err := upgrader.Upgrade(response, request, nil)
@@ -100,22 +100,23 @@ func CreateWebSocketConnection(response http.ResponseWriter,
 		log.Println(err)
 		return
 	}
-	user := session.Values["user"].(users.User)
-	client := chat.NewClient(hub, conn, user.Name)
+	user := session.Values["user"].(db.User)
+	client := chat.NewClient(conn, user.Name)
 	
 	go client.WritePump()
-	go client.ReadPump(hub)						
+	go client.ReadPump()						
 }
 
 func Login(response http.ResponseWriter, request *http.Request, session *sessions.Session) {
 
-	password := request.FormValue("passwordInput")
+	passwordInput := request.FormValue("passwordInput")
 	login := request.FormValue("loginInput")
 
-	user, find := users.ChatUsersMap[login]
+	user, err := db.GetUserByLogin(login)
 
-	if find && user.Password == password {
-
+	if err != nil {
+		log.Println(err)
+	} else if checkPasswordHash(passwordInput, user.Password) {
 		session.Values["authenticated"] = true
 		session.Values["user"] = user
 		err := session.Save(request, response)
@@ -129,11 +130,16 @@ func Login(response http.ResponseWriter, request *http.Request, session *session
 	session.Values["LoginInput"] = login
 	session.Values["ErrorLoginMessage"] = "Неправильный логин или пароль"
 
-	err := session.Save(request, response)
+	err = session.Save(request, response)
 	if err != nil {
 		log.Println(err)
 	}
 	http.Redirect(response, request, "/chat?command=show_login_page", http.StatusFound)
+}
+
+func checkPasswordHash(passwordInput, passwordHash string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordInput))
+    return err == nil
 }
 
 func Logout(response http.ResponseWriter, request *http.Request, session *sessions.Session) {

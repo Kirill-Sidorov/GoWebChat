@@ -14,7 +14,6 @@ import (
 	"webchat/chat"
 	"webchat/db"
 	"webchat/handler"
-	"webchat/users"
 
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
@@ -25,10 +24,7 @@ const (
 	shutdownTimeout = 3 * time.Second
 )
 
-var (
-	store *sessions.CookieStore
-	hub   *chat.Hub
-)
+var store *sessions.CookieStore
 
 func main() {
 	err := godotenv.Load()
@@ -57,10 +53,9 @@ func runWebServer(ctx context.Context) error {
 	store = sessions.NewCookieStore([]byte(secret))
 	store.MaxAge(86400)
 
-	gob.Register(users.User{})
+	gob.Register(db.User{})
 
-	hub = chat.NewHub()
-	go hub.Run()
+	go chat.Run()
 
 	var mux = http.NewServeMux()
 	var srv = &http.Server{
@@ -122,7 +117,7 @@ func baseHandler(response http.ResponseWriter, request *http.Request) {
 	case "SHOW_CHAT_PAGE":
 		handler.ShowChatPage(response, request, session)
 	case "CREATE_WEB_SOCKET_CONNECTION":
-		handler.CreateWebSocketConnection(response, request, session, hub)
+		handler.CreateWebSocketConnection(response, request, session)
 	case "LOGOUT":
 		handler.Logout(response, request, session)
 	default:

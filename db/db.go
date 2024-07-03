@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+
 	_ "github.com/lib/pq"
 )
 
@@ -28,12 +29,18 @@ func Init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = db.Ping()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 func Close() {
-	log.Println("DB close connection")
 	err := db.Close()
 	if err != nil {
 		log.Println(err)
+	} else {
+		log.Println("DB connection close")
 	}
 }
