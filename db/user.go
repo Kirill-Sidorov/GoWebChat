@@ -6,7 +6,7 @@ const (
 )
 
 type User struct {
-	Id		 int
+	Id       int
 	Login    string
 	Password string
 	Name     string
@@ -17,7 +17,7 @@ func GetUserByLogin(login string) (*User, error) {
 	row := db.QueryRow("SELECT * FROM Client WHERE login = $1", login)
 	user := User{}
 	err := row.Scan(&user.Id, &user.Login, &user.Password, &user.Name, &user.Type)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return &user, nil

@@ -78,23 +78,10 @@ func ShowChatPage(response http.ResponseWriter, request *http.Request, session *
 	}
 }
 
-/*
-func SendMessage(writer http.ResponseWriter, request *http.Request, session *sessions.Session) {
-	user := session.Values["user"].(users.User)
-	message := request.FormValue("message")
-	message = strings.TrimSpace(message)
-	if len(message) > 0 {
-		messages.AddMessage(user.Name, message)
-	}
-	http.Redirect(writer, request, "/chat?command=show_chat_page", http.StatusFound)
-}
-*/
+func CreateWebSocketConnection(response http.ResponseWriter,
+	request *http.Request,
+	session *sessions.Session) {
 
-func CreateWebSocketConnection(response http.ResponseWriter, 
-							   request *http.Request, 
-							   session *sessions.Session) {
-
-								
 	conn, err := upgrader.Upgrade(response, request, nil)
 	if err != nil {
 		log.Println(err)
@@ -102,9 +89,9 @@ func CreateWebSocketConnection(response http.ResponseWriter,
 	}
 	user := session.Values["user"].(db.User)
 	client := chat.NewClient(conn, user.Name)
-	
+
 	go client.WritePump()
-	go client.ReadPump()						
+	go client.ReadPump()
 }
 
 func Login(response http.ResponseWriter, request *http.Request, session *sessions.Session) {
@@ -138,8 +125,8 @@ func Login(response http.ResponseWriter, request *http.Request, session *session
 }
 
 func checkPasswordHash(passwordInput, passwordHash string) bool {
-    err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordInput))
-    return err == nil
+	err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordInput))
+	return err == nil
 }
 
 func Logout(response http.ResponseWriter, request *http.Request, session *sessions.Session) {

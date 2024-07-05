@@ -73,7 +73,7 @@ func runWebServer(ctx context.Context) error {
 		}
 	}()
 	log.Printf("Server Started: %s", listenAddr)
-	
+
 	<-ctx.Done()
 	log.Println("Shutting down server gracefully")
 

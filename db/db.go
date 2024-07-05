@@ -31,9 +31,9 @@ func Init() {
 	}
 
 	err = db.Ping()
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Close() {

@@ -26,7 +26,7 @@
             if (window["WebSocket"]) {
                 connection = new WebSocket("ws://" + document.location.host + "/chat?command=create_web_socket_connection");
                 connection.onclose = function (evt) {
-                    appendMessage("Connection closed");
+                    appendMessage("--- Chat connection closed... ---");
                 };
                 connection.onmessage = function (evt) {
                     var messages = evt.data.split('\n');
@@ -35,7 +35,7 @@
                     }
                 };
             } else {
-                appendMessage("Your browser does not support WebSockets.");
+                appendMessage("--- Your browser does not support WebSockets ----");
             }
         };
     </script>

@@ -1,23 +1,24 @@
 package messages
 
 import (
-	"fmt"
-	"strings"
+	"bytes"
 	"sync"
 )
 
-var messages strings.Builder
+var newLineSymbol = []byte{'\n'}
+var messagesBuffer *bytes.Buffer = bytes.NewBuffer(newLineSymbol)
 var lock sync.RWMutex
 
-func GetMessages() string {
+func GetMessages() []byte {
 	lock.RLock()
-	result := messages.String()
+	result := messagesBuffer.Bytes()
 	lock.RUnlock()
-	return result
+	size := len(result) - 1
+	return result[:size]
 }
 
-func AddMessage(userName string, message string) {
+func AddMessage(message []byte) {
 	lock.Lock()
-	messages.WriteString(fmt.Sprintf("%s: %s\n", userName, message))
+	messagesBuffer.Write(append(message, newLineSymbol...))
 	lock.Unlock()
 }

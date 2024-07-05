@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"log"
 	"time"
+	"webchat/messages"
 
 	"github.com/gorilla/websocket"
 )
 
 const (
-	writeWait = 10 * time.Second
-	pongWait = 60 * time.Second
-	pingPeriod = (pongWait * 9) / 10
+	writeWait      = 10 * time.Second
+	pongWait       = 6 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
 	maxMessageSize = 512
 )
 
@@ -50,11 +51,13 @@ func (c *Client) ReadPump() {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
+			log.Println("Exit from read pump")
 			break
 		}
 		message = bytes.Replace(message, newline, space, -1)
 		message = bytes.TrimSpace(message)
-		message = append([]byte(c.name + ": "), message...)
+		message = append([]byte(c.name+": "), message...)
+		messages.AddMessage(message)
 		broadcast <- message
 	}
 }
@@ -65,6 +68,20 @@ func (c *Client) WritePump() {
 		ticker.Stop()
 		c.conn.Close()
 	}()
+
+	c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+	w, err := c.conn.NextWriter(websocket.TextMessage)
+	if err != nil {
+		log.Println("Exit from write pump")
+		return
+	}
+	w.Write(messages.GetMessages())
+
+	if err := w.Close(); err != nil {
+		log.Println("Exit from write pump")
+		return
+	}
+
 	for {
 		select {
 		case message, ok := <-c.send:
@@ -72,11 +89,13 @@ func (c *Client) WritePump() {
 			if !ok {
 				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				log.Println("Exit from write pump")
 				return
 			}
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
+				log.Println("Exit from write pump")
 				return
 			}
 			w.Write(message)
@@ -89,11 +108,14 @@ func (c *Client) WritePump() {
 			}
 
 			if err := w.Close(); err != nil {
+				log.Println("Exit from write pump")
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+
+				log.Println("Exit from write pump, fail websocket ping")
 				return
 			}
 		}
