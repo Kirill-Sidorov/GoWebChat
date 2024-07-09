@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	listenAddr      = "127.0.0.1:8080"
+	listenAddr      = ":8080"
 	shutdownTimeout = 3 * time.Second
 )
 
