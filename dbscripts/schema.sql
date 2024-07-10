@@ -1,6 +1,3 @@
-DROP DATABASE IF EXISTS webchatdb;
-CREATE DATABASE webchatdb;
-
 DROP TABLE IF EXISTS Client;
 CREATE TABLE Client (
     id       SERIAL PRIMARY KEY,
