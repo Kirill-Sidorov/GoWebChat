@@ -2,44 +2,42 @@
 <html>
 <link rel="icon" href="data:,">
 <head>
-    <title>Пользователи</title>
+    <title>Users</title>
 </head>
 <body>
 <div align="center">
     <table cellspacing=15>
         <tr>
             <td>
-                <a href="chat?command=show_chat_page">Вернуться в Чат</a>
+                <a href="chat?command=show_chat_page">Return to Chat</a>
             </td>
             <td>
-                <a href="chat?command=logout">Выход</a>
+                <a href="chat?command=logout">Logout</a>
             </td>
         </tr>
     </table>
-    <h3>Пользователи</h3>
+    <h3>Users</h3>
     <table border=1 cellpadding=7>
         <thead>
         <tr>
-            <td>Логин</td>
-            <td>Имя</td>
-            <td>Тип пользователя</td>
-            <td>Заблокирован</td>
-            <td>Действие</td>
+            <td>Name</td>
+            <td>User type</td>
+            <td>Locked</td>
+            <td>Action</td>
         </tr>
         </thead>
         <c:forEach var="chatUser" items="${chatUsers}">
             <tbody>
             <tr>
-                <td><c:out value="${chatUser.login}"/></td>
                 <td><c:out value="${chatUser.name}"/></td>
                 <td><c:out value="${chatUser.userType}"/></td>
                 <td><c:out value="${chatUser.block}"/></td>
                 <td>
                     <c:if test="${chatUser.block == true}">
-                        <a href="chat?command=change_block_user&login=${chatUser.login}">Разблокировать</a>
+                        <a href="chat?command=change_block_user&login=${chatUser.login}">Unlocked</a>
                     </c:if>
                     <c:if test="${chatUser.block == false}">
-                        <a href="chat?command=change_block_user&login=${chatUser.login}">Заблокировать</a>
+                        <a href="chat?command=change_block_user&login=${chatUser.login}">Locked</a>
                     </c:if>
                 </td>
             </tr>

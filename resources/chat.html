@@ -47,14 +47,14 @@
         }
     </style>
     <head>
-        <title>Чат</title>
+        <title>Chat</title>
     </head>
     <body bgcolor="#c0c0c0">
         <div align="center">
             <table>
                 <tr>
-                    <td><h3>Чат, Пользователь - {{.UserName}}</h3></td>
-                    <td><a href="chat?command=logout">Выход</a></td>
+                    <td><h3>Chat, User - {{.UserName}}</h3></td>
+                    <td><a href="chat?command=logout">Logout</a></td>
                 </tr>
                 <tr>
                     <td>
@@ -65,7 +65,7 @@
                     <form id="messageSendForm" action="chat?command=send_message"></form>
                     <tr>
                         <td>
-                            <input id="messageInput" form="messageSendForm" placeholder="Поле ввода сообщения" autofocus="true"/>
+                            <input id="messageInput" form="messageSendForm" placeholder="Message input field" autofocus="true"/>
                         </td>
                     </tr>
                 {{end}}
@@ -73,7 +73,7 @@
                     <td>
                         {{if not .IsBlock}}
                             <button id="messageSendButton" form="messageSendForm" type="submit">
-                                Отправить
+                                Send
                             </button>
                         {{end}}
                     </td>
@@ -82,7 +82,7 @@
                     <tr>
                         <td></td>
                         <td>
-                            <a href="chat?command=show_users_page">Пользователи</a>
+                            <a href="chat?command=show_users_page">Chat Users</a>
                         </td>
                     </tr>
                 {{end}}

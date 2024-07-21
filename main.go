@@ -32,6 +32,7 @@ func main() {
 		log.Fatal(".env file not found")
 	}
 
+	handler.Init()
 	db.Init()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -105,17 +106,20 @@ func baseHandler(response http.ResponseWriter, request *http.Request) {
 
 	if !ok || !auth {
 
-		if command == "LOGIN" {
+		switch command {
+		case "LOGIN":
 			handler.Login(response, request, session)
-			return
+		case "SHOW_REGISTRATION_PAGE":
+			handler.ShowRegistrationPage(response, request, session)
+		default:
+			handler.ShowLoginPage(response, request, session)
 		}
-		handler.ShowLoginPage(response, request, session)
 		return
 	}
 
 	switch command {
 	case "SHOW_CHAT_PAGE":
-		handler.ShowChatPage(response, request, session)
+		handler.ShowChatPage(response, request, session)	
 	case "CREATE_WEB_SOCKET_CONNECTION":
 		handler.CreateWebSocketConnection(response, request, session)
 	case "LOGOUT":

@@ -9,5 +9,5 @@ CREATE TABLE Client (
 
 INSERT INTO Client (login, password, name, type)
 VALUES 
-('admin', '$2a$14$K7y0tG1YP3IRpTZfHFfBQuxHymYKp5xm8zuhYoMic0wQW85OCq7Z2', 'Админ', 'ADMIN'),
-('anton', '$2a$14$H4n4LQJUO2lSO.35R8zRHu97FE4hIBtX8xISzbQ95ov.iMpRNd.9.', 'Антон', 'CLIENT')
+('admin', '$2a$14$K7y0tG1YP3IRpTZfHFfBQuxHymYKp5xm8zuhYoMic0wQW85OCq7Z2', 'Admin', 'ADMIN'),
+('anton', '$2a$14$H4n4LQJUO2lSO.35R8zRHu97FE4hIBtX8xISzbQ95ov.iMpRNd.9.', 'Anton', 'CLIENT')
