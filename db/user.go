@@ -22,3 +22,23 @@ func GetUserByLogin(login string) (*User, error) {
 	}
 	return &user, nil
 }
+
+func IsExistUserWithLogin(login string) bool {
+	row := db.QueryRow("SELECT login FROM Client WHERE login = $1", login)
+	var foundLogin string
+	err := row.Scan(&foundLogin)
+	return err == nil
+}
+
+func IsExistUserWithName(name string) bool {
+	row := db.QueryRow("SELECT name FROM Client WHERE name = $1", name)
+	var foundName string
+	err := row.Scan(&foundName)
+	return err == nil
+}
+
+func CreateNewUser(login, password, name string) error {
+	_, err := db.Exec("INSERT INTO Client (login, password, name, type) VALUES ($1, $2, $3, $4)",
+		login, password, name, CLIENT)
+	return err
+}

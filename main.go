@@ -111,6 +111,10 @@ func baseHandler(response http.ResponseWriter, request *http.Request) {
 			handler.Login(response, request, session)
 		case "SHOW_REGISTRATION_PAGE":
 			handler.ShowRegistrationPage(response, request, session)
+		case "REGISTER":
+			handler.Register(response, request, session)
+		case "SHOW_LOGIN_PAGE":
+			handler.ShowLoginPage(response, request, session)
 		default:
 			handler.ShowLoginPage(response, request, session)
 		}
